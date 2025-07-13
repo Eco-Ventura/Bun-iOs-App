@@ -7,11 +7,13 @@
 
 import SwiftUI
 import AVFAudio
+import SpriteKit
 
 struct ContentView: View {
     @State private var message = "Hello, my Bunny 💛"
     @State var boopCount = 0
     @State private var audioPlayer: AVAudioPlayer!
+    @StateObject private var scene = sparkleScene()
     var body: some View {
         VStack(spacing: 20) {
             Text(message)
@@ -22,15 +24,26 @@ struct ContentView: View {
                 .font(.largeTitle)
                 .padding()
             
-            Image("BunnyBean")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 200, height: 200)
-                .onTapGesture {
-                    boopCount += 1
-                    message = "Bunny Booped! 💖🐰"
-                    playBoopSound()
-                }
+            ZStack {
+                Image("BunnyBean")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 200, height: 200)
+                SpriteView(scene: scene)
+                    .frame(width: 200, height: 200)
+                    .allowsTransparency(true)
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onEnded { value in
+                                let location = CGPoint(x: value.location.x,
+                                                      y: scene.size.height - value.location.y)
+                                boopCount += 1
+                                message = "Bunny Booped! 💖🐰"
+                                playBoopSound()
+                                scene.emitSparkle(at: location)
+                            }
+                    )
+            }
 
 
             Button("Boop") {
